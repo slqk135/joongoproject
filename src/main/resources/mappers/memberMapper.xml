@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mappers.memberMapper">
+
+<insert id="memJoin" parameterType="model.MemberDTO">
+	INSERT INTO USERMEMBER(MEM_ID, MEM_PW, MEM_NAME, MEM_ID_CARD, MEM_EMAIL,MEM_PHONE,MEM_ADDRESS,MEM_BALANCE)
+	VALUES(#{memId}, #{memPw}, #{memName}, #{memIdCard}, #{memEmail},#{memPhone},#{memAddress},#{memBalance})
+</insert>
+
+<select id="idCheck" parameterType="String" resultType="Integer">
+	SELECT COUNT(*) FROM USERMEMBER WHERE MEM_ID = #{memId}
+</select>
+
+<select id="memberCheck" parameterType="command.LoginCommand" resultType="Integer">
+	SELECT COUNT(*) FROM USERMEMBER WHERE MEM_ID = #{memId} AND MEM_PW = #{memPw}
+</select>
+
+<select id="memberLogin" parameterType="string" resultType="model.AuthInfoDTO">
+	SELECT MEM_ID memId, MEM_PW memPw, MEM_NAME memName, MEM_ID_CARD memIdCard, MEM_EMAIL memEmail, MEM_PHONE memPhone, MEM_ADDRESS memAddress, MEM_BALANCE memBalance FROM USERMEMBER WHERE MEM_ID = #{memId}
+</select>
+
+<select id="memDetail" parameterType="string" resultType="model.MemberDTO">
+	SELECT MEM_ID memId, MEM_PW memPw, MEM_NAME memName, MEM_ID_CARD memIdCard, MEM_EMAIL memEmail, MEM_PHONE memPhone, MEM_ADDRESS memAddress, MEM_BALANCE memBalance FROM USERMEMBER WHERE MEM_ID = #{memId}
+</select>
+
+<delete id="memQuit" parameterType="string">
+	DELETE FROM USERMEMBER WHERE MEM_ID = #{memId}
+</delete>
+
+<update id="memModifyCfm" parameterType="model.MemberDTO">
+	UPDATE USERMEMBER
+	SET MEM_ADDRESS = #{memAddress}, MEM_EMAIL = #{memEmail}, MEM_PHONE = #{memPhone} 
+	WHERE MEM_ID = #{memId}
+</update>
+
+<update id="memPwChangCfm" parameterType="model.MemberDTO">
+	UPDATE USERMEMBER
+	SET MEM_PW = #{memPw}
+	WHERE MEM_ID = #{memId}
+</update>
+
+<select id="myGoods" resultType="model.BoardDTO">
+
+	SELECT MEM_ID memId, BOARD_NUM boardNum, BOARD_TITLE boardTitle, BOARD_CONTENT boardContent, BOARD_DATE boardDate, GOODS_PRICE goodsPrice ,GOODS_IMG goodsImg ,BOARD_CATEGORY boardCategory
+	FROM BOARD 
+	WHERE MEM_ID = #{memId};
+
+</select>
+
+<select id = "CheckBalance" parameterType="string" resultType="int" >
+	 SELECT MEM_BALANCE
+	 FROM USERMEMBER 
+	 WHERE MEM_ID = #{memId}
+</select>
+
+<update id="paymentSuccess" parameterType="model.MemberDTO">
+	UPDATE USERMEMBER
+	SET MEM_BALANCE = #{memBalance}
+	WHERE MEM_ID = #{memId}
+</update>
+
+<select id="Pnum" resultType="Integer">
+	SELECT COUNT(*) FROM PAYMENT
+</select>
+
+<insert id="paymentInsert" parameterType="model.PaymentDTO">
+	INSERT INTO PAYMENT(PAYMENT_NUM, MEM_ID, PAYMENT_PRICE, PAYMENT_DATE, PAYMENT_STATE,PAYMENT_CONTENT)
+	VALUES(#{paymentNum}, #{memId}, #{paymentPrice}, sysdate,'결제완료',#{paymentContent})
+</insert>
+
+<select id="count" parameterType="string" resultType="int">
+	SELECT COUNT(*) FROM PAYMENT WHERE MEM_ID = #{memId}
+</select>
+
+<select id="mcount" parameterType="string" resultType="int">
+	SELECT COUNT(*) FROM GOODSPAYMENT WHERE MEM_ID = #{memId}
+</select>
+
+<select id="paymentDe" parameterType="string" resultType="model.PaymentDTO">
+	
+	SELECT *
+	FROM(SELECT ROWNUM as num, A.*
+	FROM(
+	SELECT PAYMENT_NUM paymentNum, MEM_ID memId, PAYMENT_PRICE paymentPrice, PAYMENT_DATE paymentDate, PAYMENT_STATE paymentState,PAYMENT_CONTENT paymentContent
+	FROM PAYMENT 
+	WHERE MEM_ID = #{memId}
+	ORDER BY PAYMENT_NUM DESC)A)
+	WHERE num &gt;= #{startEndPageDTO.startRow} AND num &lt;= #{startEndPageDTO.endRow}
+	
+
+</select>
+
+<select id="myPage" parameterType="string" resultType="model.GoodsPaymentDTO">
+	
+	SELECT *
+	FROM(SELECT ROWNUM as num, A.*
+	FROM(
+	SELECT G.PAYMENT_NUM paymentNum,B.board_title boardTitle,G.SELL_MEM_ID sellMemId, G.ORDER_MEM_ID orderMemId, G.BOARD_NUM boardNum, G.ORDER_DATE orderDate,B.GOODS_PRICE goodsPrice ,G.ORDER_STATE orderState
+	FROM GOODSPAYMENT G
+    INNER JOIN
+    BOARD B
+    ON
+    G.board_num = B.board_num
+	WHERE SELL_MEM_ID = #{sellMemId}
+	ORDER BY PAYMENT_NUM DESC)A)
+	WHERE num &gt;= #{startEndPageDTO.startRow} AND num &lt;= #{startEndPageDTO.endRow}
+	
+
+</select>
+
+
+<update id="UpPaySuccess" parameterType="model.MemberDTO">
+	UPDATE USERMEMBER
+	SET MEM_BALANCE = #{memBalance}
+	WHERE MEM_ID = #{memId}
+</update>
+
+
+<insert id="orderpayment" parameterType="model.GoodsPaymentDTO">
+	INSERT INTO GOODSPAYMENT(PAYMENT_NUM, SELL_MEM_ID, ORDER_MEM_ID, BOARD_NUM, ORDER_DATE,ORDER_STATE)
+	VALUES(#{paymentNum}, #{sellMemId}, #{orderMemId}, #{boardNum},sysdate,'결제완료')
+</insert>
+
+
+
+</mapper>

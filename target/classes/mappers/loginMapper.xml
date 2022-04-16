@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mappers.loginMapper">
+
+<select id="idCheck" parameterType="String" resultType="int">
+	SELECT COUNT(*) FROM USERMEMBER WHERE MEM_ID = #{memId}
+</select>
+
+<select id="memberCheck" parameterType="command.LoginCommand" resultType="int">
+	SELECT COUNT(*) FROM USERMEMBER WHERE MEM_ID = #{memId} AND MEM_PW = #{memPw}
+</select>
+
+<select id="memberLogin" parameterType="string" resultType="model.AuthInfoDTO">
+	SELECT MEM_ID memId, MEM_PW memPw, MEM_NAME memName, MEM_ID_CARD memIdCard, MEM_EMAIL memEmail, MEM_PHONE memPhone, MEM_ADDRESS memAddress, MEM_BALANCE memBalance FROM USERMEMBER WHERE MEM_ID = #{memId}
+</select>
+
+
+
+</mapper>
